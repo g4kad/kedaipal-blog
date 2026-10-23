@@ -52,7 +52,7 @@ window.Blog = (function () {
           ${CARD},
           articleImage${IMAGE},
           articleImageMobile${IMAGE},
-          body[]{..., _type == "image" => ${IMAGE.slice(0, -1)}, caption}, _type == "audio" => {"src": file.asset->url}, _type == "gallery" => {caption, "images": images[]${IMAGE.slice(0, -1)}, caption}}}
+          body[]{..., _type == "image" => ${IMAGE.slice(0, -1)}, caption}, _type == "audio" => {"src": file.asset->url}, _type == "gallery" => {caption, "images": images[]${IMAGE.slice(0, -1)}, caption}}, _type == "video" => {title, caption, gif, "src": coalesce(file.asset->url, url), "mime": file.asset->mimeType, poster${IMAGE}}}
         },
         "others": *[_type == "post" && slug.current != $slug && publishedAt <= now()] | order(publishedAt desc)[0...12]{${CARD}}
       }`, { slug });
@@ -217,6 +217,26 @@ window.Blog = (function () {
         paint();
       });
     });
+  }
+
+  // ---------- Video (uploaded to Sanity or a direct file link; no third-party player) ----------
+
+  function video(b) {
+    const type = b.mime || ({ mp4: 'video/mp4', m4v: 'video/mp4', webm: 'video/webm', mov: 'video/quicktime' }[
+      (b.src.split('?')[0].split('.').pop() || '').toLowerCase()] || '');
+    const poster = b.poster?.asset ? imageUrl(b.poster, 1600) : '';
+    // GIF mode: silent autoplaying loop. Otherwise: normal controls, and nothing downloads until play.
+    const attrs = b.gif
+      ? 'autoplay muted loop playsinline preload="auto"'
+      : `controls playsinline preload="${poster ? 'none' : 'metadata'}"`;
+    return `
+      <figure class="video${b.gif ? ' video--gif' : ''}">
+        <video ${attrs}${poster ? ` poster="${esc(poster)}"` : ''}${b.title ? ` aria-label="${esc(b.title)}"` : ''}>
+          <source src="${esc(b.src)}"${type ? ` type="${esc(type)}"` : ''} />
+          Your browser can't play this video. <a href="${esc(b.src)}">Download it instead</a>.
+        </video>
+        ${b.caption ? `<figcaption>${esc(b.caption)}</figcaption>` : ''}
+      </figure>`;
   }
 
   // ---------- Image gallery + lightbox ----------
@@ -411,6 +431,8 @@ window.Blog = (function () {
         out += audioPlayer(b);
       } else if (b._type === 'gallery' && b.images?.length) {
         out += gallery(b);
+      } else if (b._type === 'video' && b.src) {
+        out += video(b);
       }
     }
     closeList();

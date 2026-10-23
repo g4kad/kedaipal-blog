@@ -3,6 +3,7 @@ import {DocumentTextIcon} from '@sanity/icons/DocumentText'
 import {BulbOutlineIcon} from '@sanity/icons/BulbOutline'
 import {PlayIcon} from '@sanity/icons/Play'
 import {ImagesIcon} from '@sanity/icons/Images'
+import {VideoIcon} from '@sanity/icons/Video'
 import {CategorySelect} from './CategorySelect'
 
 // Image upload with alt text, grouped under "Images" in the form
@@ -195,6 +196,69 @@ export default defineType({
               const n = Object.values(slots).filter(Boolean).length
               return {title: `Image gallery · ${n} image${n === 1 ? '' : 's'}`, subtitle: caption, media}
             },
+          },
+        }),
+        defineArrayMember({
+          name: 'video',
+          title: 'Video',
+          type: 'object',
+          icon: VideoIcon,
+          fields: [
+            defineField({
+              name: 'file',
+              title: 'Upload a video',
+              type: 'file',
+              description:
+                'MP4 (H.264) works everywhere. Keep it short: under about 2 minutes and 30 MB (720p is plenty). Videos use your Sanity bandwidth each time they play, so for longer videos use a link below instead.',
+              options: {accept: 'video/mp4,video/quicktime,video/webm,.mp4,.mov,.m4v,.webm'},
+            }),
+            defineField({
+              name: 'url',
+              title: 'Or link to a video file',
+              type: 'url',
+              description:
+                'A direct link to a video file hosted elsewhere, ending in .mp4, .webm or .mov. Google Drive and Dropbox share links will not play.',
+              validation: (r) =>
+                r.uri({scheme: ['https']}).custom((url) =>
+                  !url || /\.(mp4|m4v|webm|mov)(\?.*)?$/i.test(url)
+                    ? true
+                    : 'This must be a direct link to a video file ending in .mp4, .webm or .mov.',
+                ),
+            }),
+            defineField({
+              name: 'poster',
+              title: 'Thumbnail',
+              type: 'image',
+              description: 'Optional image shown before the video plays. Use the same shape as the video (e.g. 1600 × 900 for landscape).',
+              options: {hotspot: true},
+            }),
+            defineField({
+              name: 'title',
+              type: 'string',
+              description: 'Short description of the video, read out by screen readers.',
+            }),
+            defineField({name: 'caption', type: 'string', description: 'Optional, shown under the video.'}),
+            defineField({
+              name: 'gif',
+              title: 'Play like a GIF',
+              type: 'boolean',
+              description: 'For short silent clips: plays automatically, muted and on a loop, with no controls.',
+              initialValue: false,
+            }),
+          ],
+          validation: (r) =>
+            r.custom((v) => {
+              if (!v?.file?.asset && !v?.url) return 'Upload a video or paste a link to one.'
+              if (v?.file?.asset && v?.url) return 'Use either an upload or a link, not both.'
+              return true
+            }),
+          preview: {
+            select: {title: 'title', filename: 'file.asset.originalFilename', url: 'url', media: 'poster'},
+            prepare: ({title, filename, url, media}) => ({
+              title: title || 'Video',
+              subtitle: filename || url || 'No video yet',
+              media: media || VideoIcon,
+            }),
           },
         }),
         defineArrayMember({

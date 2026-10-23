@@ -748,3 +748,32 @@ html.lb-open { overflow: hidden; }
   .lb-prev { grid-column: 1; justify-self: start; }
   .lb-next { grid-column: 1; justify-self: end; }
 }
+
+/* ---------- Video (article body) ---------- */
+.prose .video { margin-inline: 0; }
+/* Sized by the video's own shape: landscape fills the width,
+   vertical (phone) videos stay narrow and centred, never taller than the screen */
+.video video {
+  display: block;
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  max-height: min(80vh, 44rem);
+  margin-inline: auto;
+  border-radius: var(--radius);
+  background: var(--navy);
+}
+.video--gif video { pointer-events: none; }
+.prose .video figcaption {
+  margin-top: 0.625rem;
+  font-size: 0.875rem;
+  color: var(--muted-foreground);
+  text-align: center;
+}
+@media (min-width: 768px) {
+  .prose .video {
+    width: min(56rem, calc(100vw - 4rem));
+    margin-left: 50%;
+    transform: translateX(-50%);
+  }
+}
