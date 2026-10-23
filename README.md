@@ -56,6 +56,8 @@ Categories (and their order in the filter bar) are edited under **Categories**.
 
 ## Notes
 
+- Uploaded videos are copied to Cloudflare R2 by a Sanity Function after publishing. One-time setup: `studio/R2-VIDEO-SETUP.md`.
+
 - After changing `styles.css` or anything in `js/`, bump the `?v=` number on those links in `index.html` and `post.html` (e.g. to today's date) so browsers download the new files instead of a cached copy.
 
 - Articles are rendered in the browser, so search engines that don't run JavaScript won't see post text.

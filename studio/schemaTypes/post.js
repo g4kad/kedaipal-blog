@@ -209,8 +209,17 @@ export default defineType({
               title: 'Upload a video',
               type: 'file',
               description:
-                'MP4 (H.264) works everywhere. Keep it short: under about 2 minutes and 30 MB (720p is plenty). Videos use your Sanity bandwidth each time they play, so for longer videos use a link below instead.',
+                'MP4 (H.264) works everywhere; compress to 720p first. After you publish, the video is copied to Kedaipal\'s Cloudflare storage automatically and plays from there (until that is set up, it plays from Sanity and uses Sanity bandwidth).',
               options: {accept: 'video/mp4,video/quicktime,video/webm,.mp4,.mov,.m4v,.webm'},
+            }),
+            defineField({
+              name: 'r2Url',
+              title: 'Hosted on Cloudflare R2',
+              type: 'url',
+              readOnly: true,
+              description:
+                'Filled in automatically a minute or so after you publish: the uploaded video is copied to Cloudflare, and the blog plays it from there.',
+              hidden: ({parent}) => !parent?.r2Url,
             }),
             defineField({
               name: 'url',
@@ -253,10 +262,10 @@ export default defineType({
               return true
             }),
           preview: {
-            select: {title: 'title', filename: 'file.asset.originalFilename', url: 'url', media: 'poster'},
-            prepare: ({title, filename, url, media}) => ({
+            select: {title: 'title', filename: 'file.asset.originalFilename', url: 'url', r2Url: 'r2Url', media: 'poster'},
+            prepare: ({title, filename, url, r2Url, media}) => ({
               title: title || 'Video',
-              subtitle: filename || url || 'No video yet',
+              subtitle: [filename || url || 'No video yet', r2Url && '✓ Hosted on R2'].filter(Boolean).join(' · '),
               media: media || VideoIcon,
             }),
           },

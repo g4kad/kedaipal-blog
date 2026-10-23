@@ -10,8 +10,11 @@
     "seed": "node seed/build-seed.mjs && sanity dataset import seed/seed.ndjson production --replace"
   },
   "dependencies": {
+    "@sanity/client": "^8.10.1",
+    "@sanity/functions": "^1.10.1",
     "@sanity/icons": "^5.2.2",
     "@sanity/vision": "^6.16.0",
+    "aws4fetch": "^1.0.20",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
     "sanity": "^6.16.0",
@@ -19,5 +22,8 @@
   },
   "engines": {
     "node": ">=22.12"
+  },
+  "devDependencies": {
+    "@sanity/blueprints": "^0.28.0"
   }
 }
