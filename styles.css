@@ -764,6 +764,23 @@ html.lb-open { overflow: hidden; }
   background: var(--navy);
 }
 .video--gif video { pointer-events: none; }
+/* YouTube: 16:9, or 9:16 for Shorts, with the same height cap as uploaded videos */
+.video--youtube iframe {
+  display: block;
+  width: 100%;
+  max-height: min(80vh, 44rem);
+  aspect-ratio: 16 / 9;
+  border: 0;
+  border-radius: var(--radius);
+  background: var(--navy);
+}
+.video--vertical iframe {
+  width: auto;
+  height: min(80vh, 44rem);
+  max-width: 100%;
+  aspect-ratio: 9 / 16;
+  margin-inline: auto;
+}
 .prose .video figcaption {
   margin-top: 0.625rem;
   font-size: 0.875rem;

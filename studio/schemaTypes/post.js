@@ -6,6 +6,9 @@ import {ImagesIcon} from '@sanity/icons/Images'
 import {VideoIcon} from '@sanity/icons/Video'
 import {CategorySelect} from './CategorySelect'
 
+// YouTube watch, youtu.be, Shorts, live and embed links (the blog shows these in YouTube's player)
+const YOUTUBE = /^https:\/\/(?:www\.|m\.)?(?:youtube\.com\/(?:watch\?(?:.*&)?v=|shorts\/|live\/|embed\/)|youtu\.be\/)[\w-]{11}/i
+
 // Image upload with alt text, grouped under "Images" in the form
 const imageField = ({name, title, description}) =>
   defineField({
@@ -223,15 +226,15 @@ export default defineType({
             }),
             defineField({
               name: 'url',
-              title: 'Or link to a video file',
+              title: 'Or link to a YouTube video or video file',
               type: 'url',
               description:
-                'A direct link to a video file hosted elsewhere, ending in .mp4, .webm or .mov. Google Drive and Dropbox share links will not play.',
+                'A YouTube link (shown in YouTube\'s player), or a direct link to a video file ending in .mp4, .webm or .mov. Google Drive and Dropbox share links will not play.',
               validation: (r) =>
                 r.uri({scheme: ['https']}).custom((url) =>
-                  !url || /\.(mp4|m4v|webm|mov)(\?.*)?$/i.test(url)
+                  !url || YOUTUBE.test(url) || /\.(mp4|m4v|webm|mov)(\?.*)?$/i.test(url)
                     ? true
-                    : 'This must be a direct link to a video file ending in .mp4, .webm or .mov.',
+                    : 'This must be a YouTube link, or a direct link to a video file ending in .mp4, .webm or .mov.',
                 ),
             }),
             defineField({
@@ -240,6 +243,8 @@ export default defineType({
               type: 'image',
               description: 'Optional image shown before the video plays. Use the same shape as the video (e.g. 1600 × 900 for landscape).',
               options: {hotspot: true},
+              // YouTube shows its own thumbnail
+              hidden: ({parent}) => YOUTUBE.test(parent?.url || ''),
             }),
             defineField({
               name: 'title',
@@ -253,6 +258,7 @@ export default defineType({
               type: 'boolean',
               description: 'For short silent clips: plays automatically, muted and on a loop, with no controls.',
               initialValue: false,
+              hidden: ({parent}) => YOUTUBE.test(parent?.url || ''),
             }),
           ],
           validation: (r) =>

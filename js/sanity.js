@@ -219,9 +219,33 @@ window.Blog = (function () {
     });
   }
 
-  // ---------- Video (uploaded to Sanity or a direct file link; no third-party player) ----------
+  // ---------- Video (uploaded to Sanity, a direct file link, or a YouTube link) ----------
+
+  // Video ID, start time and shape from a YouTube watch, youtu.be, Shorts, live or embed link
+  function youtube(src) {
+    const m = src.match(/^https:\/\/(?:www\.|m\.)?(?:youtube\.com\/(?:watch\?(?:.*&)?v=|(shorts|live|embed)\/)|youtu\.be\/)([\w-]{11})/i);
+    if (!m) return null;
+    // ?t=90, ?t=1m30s or ?start=90
+    const t = (src.match(/[?&](?:t|start)=([\dhms]+)/) || [])[1] || '';
+    const [, h = 0, min = 0, s = 0] = /^\d+$/.test(t) ? [0, 0, 0, t] : t.match(/^(?:(\d+)h)?(?:(\d+)m)?(?:(\d+)s)?$/) || [];
+    return { id: m[2], start: +h * 3600 + +min * 60 + +s, vertical: (m[1] || '').toLowerCase() === 'shorts' };
+  }
+
+  function youtubeEmbed(b, yt) {
+    // youtube-nocookie: YouTube sets no cookies until the reader presses play
+    const src = `https://www.youtube-nocookie.com/embed/${yt.id}?rel=0${yt.start ? `&start=${yt.start}` : ''}`;
+    return `
+      <figure class="video video--youtube${yt.vertical ? ' video--vertical' : ''}">
+        <iframe src="${esc(src)}" title="${esc(b.title || 'YouTube video')}" loading="lazy"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+        ${b.caption ? `<figcaption>${esc(b.caption)}</figcaption>` : ''}
+      </figure>`;
+  }
 
   function video(b) {
+    const yt = youtube(b.src);
+    if (yt) return youtubeEmbed(b, yt);
     const type = b.mime || ({ mp4: 'video/mp4', m4v: 'video/mp4', webm: 'video/webm', mov: 'video/quicktime' }[
       (b.src.split('?')[0].split('.').pop() || '').toLowerCase()] || '');
     const poster = b.poster?.asset ? imageUrl(b.poster, 1600) : '';
